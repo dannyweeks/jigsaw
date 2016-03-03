@@ -10,6 +10,7 @@ use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use Jigsaw\Jigsaw\Console\BuildCommand;
 use Jigsaw\Jigsaw\Console\InitCommand;
+use Jigsaw\Jigsaw\Console\MakeCollectionCommand;
 use Jigsaw\Jigsaw\Filesystem;
 use Jigsaw\Jigsaw\Handlers\BladeHandler;
 use Jigsaw\Jigsaw\Handlers\CollectionHandler;
@@ -57,7 +58,11 @@ $container->bind(CollectionHandler::class, function ($c) use ($cachePath) {
     return new CollectionHandler($tempFilesystem, $c[Factory::class]);
 });
 
-$jigsaw = new Jigsaw(new Filesystem, $cachePath);
+$container->bind(Filesystem::class, function($c) {
+    return new Filesystem();
+});
+
+$jigsaw = new Jigsaw($container[Filesystem::class], $cachePath);
 
 $jigsaw->registerHandler($container[CollectionHandler::class]);
 $jigsaw->registerHandler($container[MarkdownHandler::class]);
@@ -65,8 +70,10 @@ $jigsaw->registerHandler($container[BladeHandler::class]);
 $jigsaw->registerHandler($container[DefaultHandler::class]);
 
 $buildCommand = new BuildCommand($jigsaw, $sourcePath, $buildPath);
+$makeCollectionCommand = new MakeCollectionCommand($container[Filesystem::class]);
 
 $app = new Symfony\Component\Console\Application('Jigsaw', '0.4.0');
 $app->add($buildCommand);
 $app->add($container[InitCommand::class]);
+$app->add($makeCollectionCommand);
 $app->run();

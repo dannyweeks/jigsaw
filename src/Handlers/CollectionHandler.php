@@ -17,7 +17,7 @@ class CollectionHandler extends MarkdownHandler
     {
         $filename = $file->getBasename($this->getFileExtension($file)) . '.html';
 
-        return new ProcessedFile($filename, 'blog', $this->render($file, $data));
+        return new ProcessedFile($filename, $file->getRelativePath(), $this->render($file, $data));
     }
 
     public function render($file, $data)
