@@ -57,7 +57,7 @@ class MakeCollectionCommand extends Command
 
         // create collection index page
         $collectionIndex = '/source/' . $name . '.blade.php';
-        $this->makeFile($collectionIndex, $name . ' collection index page.');
+        $this->makeFile($collectionIndex, $this->collectionIndexPage($name));
     }
 
     private function updateConfigFile($config)
@@ -83,23 +83,43 @@ PHP;
         $single = str_singular($name);
 
         return <<<PHP
-<h1>{{ \$title or 'This $single doesn\'t have a title!' }}</h1>
+@extends('_layouts.master')
 
-@yield('content')
+@section('body')
+    <h1>{{ \$title or 'This $single doesn\'t have a title!' }}</h1>
+
+    @yield('content')
+@endsection()
 PHP;
 
     }
 
     private function collectionItemExample($name)
     {
+        $title = 'My first ' . ucfirst(str_singular($name));
         return <<<MD
 ---
-title: This is an optional title!
+title: $title
 ---
 Well there you have it. This is the first of many items in your $name collection.
 
 Meta data like the title above will be injected into single-$name.blade.php.
 MD;
+
+    }
+
+    private function collectionIndexPage($name)
+    {
+        $name = ucfirst($name);
+        return <<<PHP
+@extends('_layouts.master')
+
+@section('body')
+    <h1> $name collection index page.</h1>
+
+    @yield('content')
+@endsection()
+PHP;
 
     }
 
