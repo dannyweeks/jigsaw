@@ -29,27 +29,15 @@ class BuildCommand extends Command
 
     protected function fire()
     {
-        $config = $this->loadConfig();
         $this->buildPath .= '_' . $this->input->getOption('env');
 
         if ($this->input->getOption('pretty') === 'false') {
             $this->jigsaw->setOption('pretty', false);
         }
 
-        $this->jigsaw->build($this->sourcePath, $this->buildPath, $config);
-        $this->info('Site built successfully!');
-    }
-
-    private function loadConfig()
-    {
         $env = $this->input->getOption('env');
 
-        if ($env !== null && file_exists(getcwd() . "/config.{$env}.php")) {
-            $environmentConfig = include getcwd() . "/config.{$env}.php";
-        } else {
-            $environmentConfig = [];
-        }
-
-        return array_merge(include getcwd() . '/config.php', $environmentConfig);
+        $this->jigsaw->build($this->sourcePath, $this->buildPath, $env);
+        $this->info('Site built successfully!');
     }
 }

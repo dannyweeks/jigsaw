@@ -12,6 +12,7 @@ class Jigsaw
     private $options = [
         'pretty' => true
     ];
+    private $config;
 
     public function __construct(Filesystem $files, $cachePath)
     {
@@ -24,16 +25,32 @@ class Jigsaw
         $this->handlers[] = $handler;
     }
 
-    public function build($source, $dest, $config = [])
+    public function build($source, $dest, $env)
     {
         $this->prepareDirectories([$this->cachePath, $dest]);
-        $this->buildSite($source, $dest, $config);
+        $this->buildSite($source, $dest, $this->getConfig($env));
         $this->cleanup();
     }
 
     public function setOption($option, $value)
     {
         $this->options[$option] = $value;
+    }
+
+    public function getConfig($env = null)
+    {
+        if (isset($this->config)) {
+            return $this->config;
+        }
+
+        if ($env !== null && file_exists(getcwd() . "/config.{$env}.php")) {
+            $environmentConfig = include getcwd() . "/config.{$env}.php";
+        } else {
+            $environmentConfig = [];
+        }
+        $this->config = array_merge(include getcwd() . '/config.php', $environmentConfig);
+
+        return $this->config;
     }
 
     private function prepareDirectories($directories)
@@ -125,7 +142,7 @@ class Jigsaw
     private function getHandler($file)
     {
         foreach ($this->handlers as $handler) {
-            if ($handler->canHandle($file)) {
+            if ($handler->canHandle($file, $this->getConfig())) {
                 return $handler;
             }
         }

@@ -6,9 +6,9 @@ use Mni\FrontYAML\Parser;
 
 class MarkdownHandler
 {
-    private $temporaryFilesystem;
-    private $viewFactory;
-    private $parser;
+    protected $temporaryFilesystem;
+    protected $viewFactory;
+    protected $parser;
 
     public function __construct($temporaryFilesystem, Factory $viewFactory, $parser = null)
     {
@@ -17,7 +17,7 @@ class MarkdownHandler
         $this->parser = $parser ?: new Parser;
     }
 
-    public function canHandle($file)
+    public function canHandle($file, $config)
     {
         return in_array($file->getExtension(), ['markdown', 'md']);
     }
@@ -28,7 +28,7 @@ class MarkdownHandler
         return new ProcessedFile($filename, $file->getRelativePath(), $this->render($file, $data));
     }
 
-    private function getFileExtension($file)
+    protected function getFileExtension($file)
     {
         return '.' . $file->getExtension();
     }
@@ -46,12 +46,12 @@ class MarkdownHandler
         }, '.blade.php');
     }
 
-    private function parseFile($file)
+    protected function parseFile($file)
     {
         return $this->parser->parse($file->getContents());
     }
 
-    private function compileToBlade($document)
+    protected function compileToBlade($document)
     {
         $frontmatter = $document->getYAML();
 
