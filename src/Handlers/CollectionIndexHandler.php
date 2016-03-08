@@ -1,20 +1,27 @@
 <?php namespace Jigsaw\Jigsaw\Handlers;
 
 use Illuminate\Contracts\View\Factory;
+use Jigsaw\Jigsaw\Jigsaw;
 use Jigsaw\Jigsaw\ProcessedFile;
 
-class BladeHandler
+class CollectionIndexHandler extends BladeHandler
 {
-    protected $viewFactory;
+    /**
+     * @var Jigsaw
+     */
+    protected $jigsaw;
 
-    public function __construct(Factory $viewFactory)
+    public function __construct(Factory $viewFactory, Jigsaw $jigsaw)
     {
-        $this->viewFactory = $viewFactory;
+        parent::__construct($viewFactory);
+        $this->jigsaw = $jigsaw;
     }
 
     public function canHandle($file, $config)
     {
-        return ends_with($file->getFilename(), '.blade.php');
+        return isset($config['collections'])
+            && starts_with($file->getFileName(), $config['collections'])
+            && parent::canHandle($file, $config);
     }
 
     public function handle($file, $data)

@@ -1,10 +1,22 @@
 <?php namespace Jigsaw\Jigsaw\Handlers;
 
+use Illuminate\Contracts\View\Factory;
+use Jigsaw\Jigsaw\Jigsaw;
 use Jigsaw\Jigsaw\ProcessedFile;
 
-class CollectionHandler extends MarkdownHandler
+class CollectionItemHandler extends MarkdownHandler
 {
     protected $handlingCollection;
+    /**
+     * @var Jigsaw
+     */
+    private $jigsaw;
+
+    public function __construct(Jigsaw $jigsaw, $temporaryFilesystem, Factory $viewFactory, $parser = null)
+    {
+        parent::__construct($temporaryFilesystem, $viewFactory, $parser);
+        $this->jigsaw = $jigsaw;
+    }
 
     public function canHandle($file, $config)
     {
@@ -49,11 +61,6 @@ class CollectionHandler extends MarkdownHandler
         return $path;
     }
 
-    protected function getCollectionView($collectionName)
-    {
-        return 'single-' . $collectionName;
-    }
-
     protected function compileToBlade($document)
     {
         return collect([
@@ -64,4 +71,8 @@ class CollectionHandler extends MarkdownHandler
         ])->implode("\n");
     }
 
+    protected function getCollectionView($collectionName)
+    {
+        return 'single-' . $collectionName;
+    }
 }

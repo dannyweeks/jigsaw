@@ -13,7 +13,8 @@ use Jigsaw\Jigsaw\Console\InitCommand;
 use Jigsaw\Jigsaw\Console\MakeCollectionCommand;
 use Jigsaw\Jigsaw\Filesystem;
 use Jigsaw\Jigsaw\Handlers\BladeHandler;
-use Jigsaw\Jigsaw\Handlers\CollectionHandler;
+use Jigsaw\Jigsaw\Handlers\CollectionIndexHandler;
+use Jigsaw\Jigsaw\Handlers\CollectionItemHandler;
 use Jigsaw\Jigsaw\Handlers\DefaultHandler;
 use Jigsaw\Jigsaw\Handlers\MarkdownHandler;
 use Jigsaw\Jigsaw\Jigsaw;
@@ -31,6 +32,12 @@ $buildPath = getcwd() . '/build';
 $sourcePath = getcwd() . '/source';
 
 $container = new Container;
+
+$container->bind(Filesystem::class, function($c) {
+    return new Filesystem();
+});
+
+$jigsaw = new Jigsaw($container[Filesystem::class], $cachePath);
 
 $container->bind(Factory::class, function ($c) use ($cachePath, $sourcePath) {
     $resolver = new EngineResolver;
@@ -53,18 +60,17 @@ $container->bind(MarkdownHandler::class, function ($c) use ($cachePath) {
     return new MarkdownHandler($tempFilesystem, $c[Factory::class]);
 });
 
-$container->bind(CollectionHandler::class, function ($c) use ($cachePath) {
+$container->bind(CollectionItemHandler::class, function ($c) use ($cachePath, $jigsaw) {
     $tempFilesystem = new TemporaryFilesystem($cachePath);
-    return new CollectionHandler($tempFilesystem, $c[Factory::class]);
+    return new CollectionItemHandler($jigsaw, $tempFilesystem, $c[Factory::class]);
 });
 
-$container->bind(Filesystem::class, function($c) {
-    return new Filesystem();
+$container->bind(CollectionIndexHandler::class, function ($c) use ($jigsaw) {
+    return new CollectionIndexHandler($c[Factory::class], $jigsaw);
 });
 
-$jigsaw = new Jigsaw($container[Filesystem::class], $cachePath);
-
-$jigsaw->registerHandler($container[CollectionHandler::class]);
+$jigsaw->registerHandler($container[CollectionIndexHandler::class]);
+$jigsaw->registerHandler($container[CollectionItemHandler::class]);
 $jigsaw->registerHandler($container[MarkdownHandler::class]);
 $jigsaw->registerHandler($container[BladeHandler::class]);
 $jigsaw->registerHandler($container[DefaultHandler::class]);

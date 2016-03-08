@@ -13,6 +13,7 @@ class Jigsaw
         'pretty' => true
     ];
     private $config;
+    private $collections = [];
 
     public function __construct(Filesystem $files, $cachePath)
     {
@@ -23,6 +24,13 @@ class Jigsaw
     public function registerHandler($handler)
     {
         $this->handlers[] = $handler;
+    }
+
+    public function pushItemToCollection($collection, $item, $data)
+    {
+        if (!isset($this->collections[$collection])) {
+            $this->collections[$collection] = collect([$item => $data]);
+        }
     }
 
     public function build($source, $dest, $env)
